@@ -1,6 +1,6 @@
 #!groovy
 
-def image
+/*def image
 
 def buildImage = { ->
   wrappedNode(label: "ubuntu && !zfs", cleanWorkspace: true) {
@@ -68,16 +68,47 @@ def runTests = { Map settings ->
     }
   }
 }
+*/
+def runWindowsTests = { ->
+  { ->
+    wrappedNode(label: "windows-rs1", cleanWorkspace: true) {
+      stage("test python=3.6.4 / docker=windows-rs4") {
+        checkout(scm)
 
-buildImage()
+        def mypwd = pwd()
+
+        echo "Install python3.6"
+        powershell """
+          Invoke-WebRequest https://www.python.org/ftp/python/3.6.4/python-3.6.4-amd64.exe -OutFile python-inst.exe
+          .\\python-inst.exe /quiet TargetDir="${mypwd}\\python3.6"
+          .\\python3.6\\python.exe -c "print('Hello World!')"
+        """
+
+        echo "Setup test virtualenv"
+        powershell """
+          .\\python3.6\\python.exe -m pip install -U pip
+          .\\python3.6\\python.exe -m pip install virtualenv>=15.1
+          .\\python3.6\\python.exe -m virtualenv .\\venv
+
+          .\\venv\\Scripts\\pip install -r requirements.txt -r requirements-dev.txt
+          .\\venv\\Scripts\\pip install tox
+        """
+      }
+    }
+  }
+}
+
+// buildImage()
 
 def testMatrix = [failFast: true]
-def docker_versions = get_versions(2)
+// def docker_versions = get_versions(2)
 
-for (int i = 0 ;i < docker_versions.length ; i++) {
+/*for (int i = 0 ;i < docker_versions.length ; i++) {
   def dockerVersion = docker_versions[i]
   testMatrix["${dockerVersion}_py27"] = runTests([dockerVersions: dockerVersion, pythonVersions: "py27"])
   testMatrix["${dockerVersion}_py36"] = runTests([dockerVersions: dockerVersion, pythonVersions: "py36"])
-}
+}*/
+
+testMatrix["win_test"] = runWindowsTests()
 
 parallel(testMatrix)
