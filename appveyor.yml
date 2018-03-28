@@ -16,6 +16,10 @@ test_script:
 artifacts:
   - path: .\dist\docker-compose-Windows-x86_64.exe
     name: "Compose Windows binary"
+  - path: .\build\docker-compose\warndocker-compose.txt
+    name: "Warnings file"
+  - path: .\build\docker-compose\xref-docker-compose.html
+    name: "Xref graph"
 
 deploy:
   - provider: Environment
