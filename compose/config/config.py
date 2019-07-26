@@ -179,13 +179,14 @@ class ConfigDetails(namedtuple('_ConfigDetails', 'working_dir config_files envir
 
 
 class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
-    """
+    """ 加载docker-compose.yml中的配置
+
     :param filename: filename of the config file
     :type  filename: string
     :param config: contents of the config file
     :type  config: :class:`dict`
     """
-
+    # 加载
     @classmethod
     def from_filename(cls, filename):
         return cls(filename, load_yaml(filename))
@@ -223,21 +224,27 @@ class ConfigFile(namedtuple('_ConfigFile', 'filename config')):
         return ComposeVersion(version)
 
     def get_service(self, name):
+        # 获取service配置信息
         return self.get_service_dicts()[name]
 
     def get_service_dicts(self):
+        # 兼容v1版本
         return self.config if self.version == V1 else self.config.get('services', {})
 
     def get_volumes(self):
+        # 兼容v1版本        
         return {} if self.version == V1 else self.config.get('volumes', {})
 
     def get_networks(self):
+        # 兼容v1版本
         return {} if self.version == V1 else self.config.get('networks', {})
 
     def get_secrets(self):
+        # 兼容
         return {} if self.version < const.COMPOSEFILE_V3_1 else self.config.get('secrets', {})
 
     def get_configs(self):
+        # 兼容
         return {} if self.version < const.COMPOSEFILE_V3_3 else self.config.get('configs', {})
 
 
@@ -259,7 +266,7 @@ class Config(namedtuple('_Config', 'version services volumes networks secrets co
 
 
 class ServiceConfig(namedtuple('_ServiceConfig', 'working_dir filename name config')):
-
+    # service 信息
     @classmethod
     def with_abs_paths(cls, working_dir, filename, name, config):
         if not working_dir:
@@ -1507,7 +1514,7 @@ def to_mapping(sequence, key_field):
 def has_uppercase(name):
     return any(char in string.ascii_uppercase for char in name)
 
-
+# 加载docker-compose.yml文件
 def load_yaml(filename, encoding=None, binary=True):
     try:
         with io.open(filename, 'rb' if binary else 'r', encoding=encoding) as fh:

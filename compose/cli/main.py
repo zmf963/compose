@@ -94,7 +94,7 @@ def main():
 
 
 def dispatch():
-    setup_logging()
+    setup_logging()  # 设置log信息
     dispatcher = DocoptDispatcher(
         TopLevelCommand,
         {'options_first': True, 'version': get_version_info('compose')})
@@ -103,7 +103,7 @@ def dispatch():
     setup_console_handler(console_handler,
                           options.get('--verbose'),
                           options.get('--no-ansi'),
-                          options.get("--log-level"))
+                          options.get("--log-level"))  # 设置 log 格式 级别
     setup_parallel_logger(options.get('--no-ansi'))
     if options.get('--no-ansi'):
         command_options['--no-color'] = True
@@ -1402,7 +1402,7 @@ def log_printer_from_project(
     log_args,
     cascade_stop=False,
     event_stream=None,
-):
+    ):
     return LogPrinter(
         containers,
         build_log_presenters(project.service_names, monochrome),

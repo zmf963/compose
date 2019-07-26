@@ -321,7 +321,7 @@ class Service(object):
         # This is only necessary for `scale` and `volumes_from`
         # auto-creating containers to satisfy the dependency.
         self.ensure_image_exists()
-
+        # _get_container_create_option() docker run 参数的处理
         container_options = self._get_container_create_options(
             override_options,
             number or self._next_container_number(one_off=one_off),

@@ -511,7 +511,7 @@ class Project(object):
            silent=False,
            ):
 
-        self.initialize()
+        self.initialize()  # 网络与volumes的初始化
         if not ignore_orphans:
             self.find_orphan_containers(remove_orphans)
 
