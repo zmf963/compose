@@ -1,1 +1,0 @@
-../script/release/README.md
