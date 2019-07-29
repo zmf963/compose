@@ -67,8 +67,8 @@ console_handler = logging.StreamHandler(sys.stderr)
 def main():
     signals.ignore_sigpipe()
     try:
-        command = dispatch()
-        command()
+        command = dispatch()  # 1  处理命令行参数，返回perform_command()对象
+        command() # 调用perform_command() 参数通过partial提前设置了
     except (KeyboardInterrupt, signals.ShutdownException):
         log.error("Aborting.")
         sys.exit(1)
@@ -99,14 +99,17 @@ def dispatch():
         TopLevelCommand,
         {'options_first': True, 'version': get_version_info('compose')})
 
+    # 命令行参数的解析
     options, handler, command_options = dispatcher.parse(sys.argv[1:])
     setup_console_handler(console_handler,
                           options.get('--verbose'),
                           options.get('--no-ansi'),
                           options.get("--log-level"))  # 设置 log 格式 级别
+    # 根据命令行参数设置输出信息的格式
     setup_parallel_logger(options.get('--no-ansi'))
     if options.get('--no-ansi'):
         command_options['--no-color'] = True
+    # 使用partial 提前为perform_command函数绑定参数
     return functools.partial(perform_command, options, handler, command_options)
 
 
@@ -180,7 +183,7 @@ def parse_doc_section(name, source):
 
 
 class TopLevelCommand(object):
-    """Define and run multi-container applications with Docker.
+    """使用Docker定义和运行多容器的应用程序。
 
     Usage:
       docker-compose [-f <arg>...] [options] [COMMAND] [ARGS...]
@@ -295,8 +298,13 @@ class TopLevelCommand(object):
 
     def bundle(self, options):
         """
+        从compose文件生成分布式应用程序包（DAB）。
         Generate a Distributed Application Bundle (DAB) from the Compose file.
 
+        图像必须存储摘要，这需要与Docker注册表交互。如果没有为所有图像存储摘要，
+        可以使用`docker compose pull`或`docker compose push`来获取它们。
+        要在绑定时自动推送图像，请通过`--push-images`。只有指定了`build`选项的
+        服务才会推送其图像。
         Images must have digests stored, which requires interaction with a
         Docker registry. If digests aren't stored for all images, you can fetch
         them with `docker-compose pull` or `docker-compose push`. To push images
@@ -327,7 +335,7 @@ class TopLevelCommand(object):
 
     def config(self, options):
         """
-        Validate and view the Compose file.
+        验证并显示docker-compose文件
 
         Usage: config [options]
 
@@ -376,8 +384,8 @@ class TopLevelCommand(object):
 
     def create(self, options):
         """
-        Creates containers for a service.
-        This command is deprecated. Use the `up` command with `--no-start` instead.
+        为一个服务创建容器
+        这个命令已经弃用. Use the `up` command with `--no-start` instead.
 
         Usage: create [options] [SERVICE...]
 
@@ -404,16 +412,15 @@ class TopLevelCommand(object):
 
     def down(self, options):
         """
-        Stops containers and removes containers, networks, volumes, and images
-        created by `up`.
+        停止容器并删除由`up`创建的容器、网络、卷和图像。
 
-        By default, the only things removed are:
+        默认情况下，只删除以下内容：
 
         - Containers for services defined in the Compose file
         - Networks defined in the `networks` section of the Compose file
         - The default network, if one is used
 
-        Networks and volumes defined as `external` are never removed.
+        永不删除定义为`external`的网络和卷。
 
         Usage: down [options]
 
@@ -449,12 +456,12 @@ class TopLevelCommand(object):
 
     def events(self, options):
         """
-        Receive real time events from containers.
+        从容器接收实时事件。
 
         Usage: events [options] [SERVICE...]
 
         Options:
-            --json      Output events as a stream of json objects
+            --json      以JSON对象流的形式输出事件
         """
         def format_event(event):
             attributes = ["%s=%s" % item for item in event['attributes'].items()]
@@ -474,7 +481,7 @@ class TopLevelCommand(object):
 
     def exec_command(self, options):
         """
-        Execute a command in a running container
+        在正在运行的容器中执行命令
 
         Usage: exec [options] [-e KEY=VAL...] SERVICE COMMAND [ARGS...]
 
@@ -566,7 +573,7 @@ class TopLevelCommand(object):
 
     def images(self, options):
         """
-        List images used by the created containers.
+        列出所创建容器使用的图像。
         Usage: images [options] [SERVICE...]
 
         Options:
@@ -620,13 +627,12 @@ class TopLevelCommand(object):
 
     def kill(self, options):
         """
-        Force stop service containers.
+        强制停止服务容器。
 
         Usage: kill [options] [SERVICE...]
 
         Options:
-            -s SIGNAL         SIGNAL to send to the container.
-                              Default signal is SIGKILL.
+            -s SIGNAL         发送到容器的信号。默认信号为 SIGKILL.
         """
         signal = options.get('-s', 'SIGKILL')
 
@@ -634,16 +640,15 @@ class TopLevelCommand(object):
 
     def logs(self, options):
         """
-        View output from containers.
+        查看容器的输出。
 
         Usage: logs [options] [SERVICE...]
 
         Options:
-            --no-color          Produce monochrome output.
+            --no-color          产生单色输出.
             -f, --follow        Follow log output.
-            -t, --timestamps    Show timestamps.
-            --tail="all"        Number of lines to show from the end of the logs
-                                for each container.
+            -t, --timestamps    显示时间戳.
+            --tail="all"       从每个容器的日志结尾显示的行数.
         """
         containers = self.project.containers(service_names=options['SERVICE'], stopped=True)
 
@@ -668,7 +673,7 @@ class TopLevelCommand(object):
 
     def pause(self, options):
         """
-        Pause services.
+        暂停服务。
 
         Usage: pause [SERVICE...]
         """
@@ -677,7 +682,7 @@ class TopLevelCommand(object):
 
     def port(self, options):
         """
-        Print the public port for a port binding.
+        打印端口绑定的公共端口的情况。
 
         Usage: port [options] SERVICE PRIVATE_PORT
 
@@ -893,7 +898,7 @@ class TopLevelCommand(object):
 
     def scale(self, options):
         """
-        Set number of containers to run for a service.
+        设置要为service运行的containers数量。
 
         Numbers are specified in the form `service=num` as arguments.
         For example:
@@ -927,7 +932,7 @@ class TopLevelCommand(object):
 
     def start(self, options):
         """
-        Start existing containers.
+        启动现有容器。
 
         Usage: start [SERVICE...]
         """
@@ -936,7 +941,7 @@ class TopLevelCommand(object):
 
     def stop(self, options):
         """
-        Stop running containers without removing them.
+        停止运行容器而不移除它们。
 
         They can be started again with `docker-compose start`.
 
@@ -951,7 +956,7 @@ class TopLevelCommand(object):
 
     def restart(self, options):
         """
-        Restart running containers.
+        重启container
 
         Usage: restart [options] [SERVICE...]
 
@@ -965,7 +970,7 @@ class TopLevelCommand(object):
 
     def top(self, options):
         """
-        Display the running processes
+        显示正在运行的进程
 
         Usage: top [SERVICE...]
 
@@ -992,7 +997,7 @@ class TopLevelCommand(object):
 
     def unpause(self, options):
         """
-        Unpause services.
+        取消暂停服务
 
         Usage: unpause [SERVICE...]
         """
@@ -1001,7 +1006,7 @@ class TopLevelCommand(object):
 
     def up(self, options):
         """
-        Builds, (re)creates, starts, and attaches to containers for a service.
+        构建 创建 启动 service中的容器
 
         Unless they are already running, this command also starts any linked services.
 
@@ -1100,9 +1105,9 @@ class TopLevelCommand(object):
                 to_attach = up(False)
             except docker.errors.ImageNotFound as e:
                 log.error(
-                    "The image for the service you're trying to recreate has been removed. "
-                    "If you continue, volume data could be lost. Consider backing up your data "
-                    "before continuing.\n".format(e.explanation)
+                    "您尝试重新创建的服务的映像已被删除。 "
+                    "如果继续，卷数据可能会丢失。在继续之前考虑备份数据 "
+                    "。\n".format(e.explanation)
                 )
                 res = yesno("Continue with the new image? [yN]", False)
                 if res is None or not res:
@@ -1141,12 +1146,12 @@ class TopLevelCommand(object):
     @classmethod
     def version(cls, options):
         """
-        Show version information
+        显示版本信息。
 
         Usage: version [--short]
 
         Options:
-            --short     Shows only Compose's version number.
+            --short     仅显示版本号
         """
         if options['--short']:
             print(__version__)

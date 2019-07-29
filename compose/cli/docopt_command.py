@@ -6,14 +6,14 @@ from inspect import getdoc
 from docopt import docopt
 from docopt import DocoptExit
 
-
+# 获取一个docopt对象
 def docopt_full_help(docstring, *args, **kwargs):
     try:
         return docopt(docstring, *args, **kwargs)
     except DocoptExit:
         raise SystemExit(docstring)
 
-
+# 参数的处理
 class DocoptDispatcher(object):
 
     def __init__(self, command_class, options):
@@ -21,7 +21,9 @@ class DocoptDispatcher(object):
         self.options = options
 
     def parse(self, argv):
-        command_help = getdoc(self.command_class)
+        """参数处理
+        """
+        command_help = getdoc(self.command_class)  # 获取帮助文档
         options = docopt_full_help(command_help, argv, **self.options)
         command = options['COMMAND']
 
@@ -37,11 +39,11 @@ class DocoptDispatcher(object):
         command_options = docopt_full_help(docstring, options['ARGS'], options_first=True)
         return options, handler, command_options
 
-
+# 获取command_class类中的command方法
 def get_handler(command_class, command):
     command = command.replace('-', '_')
-    # we certainly want to have "exec" command, since that's what docker client has
-    # but in python exec is a keyword
+    # 我们当然希望有"exec"命令，因为Docker客户机就是这样的。
+    # 但在python中，exec是一个关键字
     if command == "exec":
         command = "exec_command"
 
@@ -50,7 +52,7 @@ def get_handler(command_class, command):
 
     return getattr(command_class, command)
 
-
+# 定义一个异常，没有这个命令
 class NoSuchCommand(Exception):
     def __init__(self, command, supercommand):
         super(NoSuchCommand, self).__init__("No such command: %s" % command)

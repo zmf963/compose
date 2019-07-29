@@ -512,7 +512,7 @@ class Project(object):
            ):
 
         self.initialize()  # 网络与volumes的初始化
-        if not ignore_orphans:
+        if not ignore_orphans: # ignore_orphans ？？？ 
             self.find_orphan_containers(remove_orphans)
 
         if scale_override is None:
