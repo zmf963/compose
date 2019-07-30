@@ -152,7 +152,7 @@ class Network(object):
 def create_ipam_config_from_dict(ipam_dict):
     if not ipam_dict:
         return None
-
+    print(ipam_dict)
     return IPAMConfig(
         driver=ipam_dict.get('driver') or 'default',
         pool_configs=[

@@ -523,7 +523,7 @@ class Project(object):
             include_deps=start_deps)
 
         for svc in services:
-            svc.ensure_image_exists(do_build=do_build, silent=silent)
+            svc.ensure_image_exists(do_build=do_build, silent=silent)  # 检查服务中所依赖的镜像是否存在
         plans = self._get_convergence_plans(
             services, strategy, always_recreate_deps=always_recreate_deps)
 

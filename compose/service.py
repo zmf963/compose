@@ -16,7 +16,7 @@ from docker.errors import APIError
 from docker.errors import ImageNotFound
 from docker.errors import NotFound
 from docker.types import LogConfig
-from docker.types i？mport Mount
+from docker.types import Mount
 from docker.utils import version_gte
 from docker.utils import version_lt
 from docker.utils.ports import build_port_bindings
@@ -1402,7 +1402,8 @@ class ServiceNetworkMode(object):
 # Names
 
 
-def build_container_name(project, service, number, slug=None):
+def 
+(project, service, number, slug=None):
     bits = [project.lstrip('-_'), service]
     if slug:
         bits.extend(['run', truncate_id(slug)])

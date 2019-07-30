@@ -32,6 +32,7 @@ STOP = object()
 class GlobalLimit(object):
     """Simple class to hold a global semaphore limiter for a project. This class
     should be treated as a singleton that is instantiated when the project is.
+    简单类，用于保存项目的全局信号量限制器。该类应被视为一个在项目为时实例化的单例。
     """
 
     global_limiter = Semaphore(PARALLEL_LIMIT)
@@ -46,6 +47,8 @@ class GlobalLimit(object):
 def parallel_execute_watch(events, writer, errors, results, msg, get_name, fail_check):
     """ Watch events from a parallel execution, update status and fill errors and results.
         Returns exception to re-raise.
+        从并行执行中监视事件，更新状态并填充错误和结果。
+        返回要重新引发的异常。
     """
     error_to_reraise = None
     for obj, result, exception in events:
@@ -121,7 +124,7 @@ def _no_deps(x):
 class State(object):
     """
     Holds the state of a partially-complete parallel operation.
-
+    保持部分完成的并行操作的状态。
     state.started:   objects being processed
     state.finished:  objects which have been processed
     state.failed:    objects which either failed or whose dependencies failed

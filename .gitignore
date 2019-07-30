@@ -6,6 +6,7 @@
 .coverage*
 .DS_Store
 .idea
+.vscode
 
 /.tox
 /binaries
@@ -17,3 +18,4 @@
 /README.rst
 /*venv
 local_*
+launch.json

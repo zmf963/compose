@@ -49,6 +49,7 @@ class Container(object):
 
     @classmethod
     def create(cls, client, **options):
+        print(options)
         response = client.create_container(**options)
         return cls.from_id(client, response['Id'])
 
